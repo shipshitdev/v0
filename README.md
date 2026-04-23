@@ -31,6 +31,16 @@ Or pass the project directory up front:
 npx @shipshitdev/v0 my-product
 ```
 
+## Local Development
+
+Inside this source repo, npm resolves `npx @shipshitdev/v0` to the local package before the public registry package. Run the normal build and local bin link when working from the repo root:
+
+```bash
+bun run build
+bun run prepare
+npx @shipshitdev/v0 /tmp/v0-smoke --yes --skip-agent --no-install --no-start
+```
+
 ## Defaults
 
 Generated app surfaces:

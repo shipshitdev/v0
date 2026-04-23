@@ -25,6 +25,7 @@
   },
   "files": [
     "dist",
+    "scripts/link-local-bin.mjs",
     "skills",
     "README.md"
   ],
@@ -37,6 +38,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "prepare": "node scripts/link-local-bin.mjs",
     "site:build": "bun run build",
     "typecheck": "tsc --noEmit",
     "deps:update": "bun update --latest",

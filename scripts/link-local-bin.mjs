@@ -14,9 +14,6 @@ if (!existsSync(sourceDir)) {
 }
 
 mkdirSync(binDir, { recursive: true });
-
-if (existsSync(binPath)) {
-  rmSync(binPath);
-}
+rmSync(binPath, { force: true });
 
 symlinkSync(relativeTarget, binPath);

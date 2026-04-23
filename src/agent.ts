@@ -2,7 +2,8 @@ import { spawn } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { ScaffoldAnswers } from './types';
+import { runStep } from './progress';
+import type { Agent, ScaffoldAnswers } from './types';
 
 export function buildAgentPrompt(answers: ScaffoldAnswers): string {
   return `You are extending a freshly generated Shipshit.dev project scaffold.
@@ -32,12 +33,34 @@ type AgentRunResult = {
   logPath: string;
 };
 
-async function runWithStdin(command: string, args: string[], input: string, cwd: string, logPath: string): Promise<AgentRunResult> {
-  await fs.mkdir(path.dirname(logPath), { recursive: true });
+type AgentCommand = {
+  command: string;
+  args: string[];
+};
 
+function agentCommand(agent: Agent): AgentCommand {
+  return agent === 'claude'
+    ? { command: 'claude', args: ['-p'] }
+    : { command: 'codex', args: ['exec', '--skip-git-repo-check', '-'] };
+}
+
+export function agentStepLabels(agent: Agent): string[] {
+  return [
+    `Prepare ${agent} agent log`,
+    `Launch ${agent} scaffold process`,
+    `Wait for ${agent} to inspect and edit repo`,
+    `Check ${agent} scaffold result`,
+  ];
+}
+
+async function prepareLogFile(command: string, args: string[], logPath: string): Promise<void> {
+  await fs.mkdir(path.dirname(logPath), { recursive: true });
+  await fs.writeFile(logPath, `$ ${command} ${args.join(' ')}\n\n`);
+}
+
+function runWithStdin(command: string, args: string[], input: string, cwd: string, logPath: string): Promise<AgentRunResult> {
   return new Promise((resolve) => {
-    const log = createWriteStream(logPath, { flags: 'w' });
-    log.write(`$ ${command} ${args.join(' ')}\n\n`);
+    const log = createWriteStream(logPath, { flags: 'a' });
 
     const child = spawn(command, args, {
       cwd,
@@ -68,22 +91,30 @@ async function runWithStdin(command: string, args: string[], input: string, cwd:
 export async function runAgent(answers: ScaffoldAnswers): Promise<void> {
   const prompt = buildAgentPrompt(answers);
   const logPath = path.join(answers.targetDir, '.v0', 'agent-output.log');
-  const result =
-    answers.agent === 'claude'
-      ? await runWithStdin('claude', ['-p'], prompt, answers.targetDir, logPath)
-      : await runWithStdin(
-          'codex',
-          ['exec', '--skip-git-repo-check', '-'],
-          prompt,
-          answers.targetDir,
-          logPath,
-        );
+  const { command, args } = agentCommand(answers.agent);
 
-  if (result.code === 127) {
-    throw new Error(`${answers.agent} is not installed or not on PATH. Prompt saved to .v0/agent-prompt.md.`);
-  }
+  await runStep(`Prepare ${answers.agent} agent log`, () => prepareLogFile(command, args, logPath));
 
-  if (result.code !== 0) {
-    throw new Error(`${answers.agent} exited with code ${result.code}. Output saved to ${result.logPath}.`);
-  }
+  let running: Promise<AgentRunResult> | null = null;
+  await runStep(`Launch ${answers.agent} scaffold process`, async () => {
+    running = runWithStdin(command, args, prompt, answers.targetDir, logPath);
+  });
+
+  const result = await runStep(`Wait for ${answers.agent} to inspect and edit repo`, async () => {
+    if (!running) {
+      throw new Error(`Failed to launch ${answers.agent}. Prompt saved to .v0/agent-prompt.md.`);
+    }
+
+    return running;
+  });
+
+  await runStep(`Check ${answers.agent} scaffold result`, async () => {
+    if (result.code === 127) {
+      throw new Error(`${answers.agent} is not installed or not on PATH. Prompt saved to .v0/agent-prompt.md.`);
+    }
+
+    if (result.code !== 0) {
+      throw new Error(`${answers.agent} exited with code ${result.code}. Output saved to ${result.logPath}.`);
+    }
+  });
 }

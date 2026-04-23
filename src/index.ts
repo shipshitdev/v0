@@ -3,7 +3,7 @@ import { setupGithub } from './github';
 import { parseArgs } from './parse';
 import { clearProgressPlan, configureProgressPlan, runStep } from './progress';
 import { installDependencies, printAppScripts, printStartedWebApp, startWebApp } from './runtime';
-import { runAgent } from './agent';
+import { agentStepLabels, runAgent } from './agent';
 import { scaffoldProject, scaffoldStepLabels } from './scaffold';
 
 function printHelp(): void {
@@ -32,7 +32,7 @@ function progressLabels(answers: Awaited<ReturnType<typeof collectAnswers>>): st
   const labels = [...scaffoldStepLabels(answers)];
 
   if (!answers.skipAgent) {
-    labels.push(`Run ${answers.agent} scaffold agent`);
+    labels.push(...agentStepLabels(answers.agent));
   }
   if (answers.github.enabled) {
     labels.push(answers.github.createIssue ? 'Create GitHub repo and issue' : 'Create GitHub repo');
@@ -55,7 +55,7 @@ async function main(): Promise<void> {
     await scaffoldProject(answers);
 
     if (!answers.skipAgent) {
-      await runStep(`Run ${answers.agent} scaffold agent`, () => runAgent(answers));
+      await runAgent(answers);
     }
 
     if (answers.github.enabled) {

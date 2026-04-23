@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://v0.shipshit.dev/sitemap.xml

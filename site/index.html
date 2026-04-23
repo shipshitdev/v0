@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>v0 - Shipshit.dev project scaffolder</title>
+    <meta
+      name="description"
+      content="Run npx @shipshitdev/v0 to scaffold a Bun/Turbo product monorepo with app surfaces, repo skills, and optional GitHub setup."
+    />
+    <link rel="canonical" href="https://v0.shipshit.dev/" />
+    <meta property="og:title" content="v0 - Shipshit.dev project scaffolder" />
+    <meta
+      property="og:description"
+      content="A choice-driven scaffold for product repos, agent workspaces, and GitHub setup."
+    />
+    <meta property="og:image" content="https://v0.shipshit.dev/assets/v0-hero.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Manrope:wght@500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="brand" href="/" aria-label="v0 home">
+        <span class="brand-mark">v0</span>
+        <span class="brand-text">shipshit.dev</span>
+      </a>
+      <nav class="nav-links" aria-label="External links">
+        <a href="https://www.npmjs.com/package/@shipshitdev/v0">npm</a>
+        <a href="https://github.com/shipshitdev/v0">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="assets/v0-hero.png" alt="" decoding="async" fetchpriority="high" />
+        <div class="hero-overlay" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <p class="kicker">Shipshit.dev scaffolder</p>
+          <h1 id="hero-title">v0</h1>
+          <p class="hero-copy">
+            A single command for a Bun/Turbo product repo with selected app surfaces, repo skills,
+            agent handoff, dependency install, and optional GitHub setup.
+          </p>
+          <div class="command-block" aria-label="Install command">
+            <code id="install-command">npx @shipshitdev/v0</code>
+            <button class="copy-button" type="button" data-copy-target="install-command">Copy</button>
+          </div>
+          <div class="hero-actions">
+            <a class="primary-action" href="https://www.npmjs.com/package/@shipshitdev/v0">Open npm</a>
+            <a class="secondary-action" href="https://github.com/shipshitdev/v0">View source</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="summary-band" aria-label="Generated baseline">
+        <div>
+          <span class="metric">5</span>
+          <span class="metric-label">app surfaces</span>
+        </div>
+        <div>
+          <span class="metric">2</span>
+          <span class="metric-label">agent runners</span>
+        </div>
+        <div>
+          <span class="metric">1</span>
+          <span class="metric-label">repo command</span>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="creates-title">
+        <div class="section-heading">
+          <p class="section-kicker">What it writes</p>
+          <h2 id="creates-title">A product repo, not a blank template.</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>Bun/Turbo workspace</h3>
+            <p>Root scripts, workspaces, TypeScript strict mode, package slots, and app scripts for the surfaces you choose.</p>
+          </article>
+          <article class="feature-card">
+            <h3>App surfaces</h3>
+            <p>Next.js web and app shells, Vite React desktop, mobile, and extension surfaces, each wired to the same route choices.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Agent context</h3>
+            <p>Selected `.agents/skills`, generated memory folders, and relative Claude/Codex symlinks that stay inside the repo.</p>
+          </article>
+          <article class="feature-card">
+            <h3>GitHub setup</h3>
+            <p>Optional `gh` repo creation, initial commit, remote push, and a scope issue captured through quiet `.v0` logs.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section command-section" aria-labelledby="commands-title">
+        <div class="section-heading">
+          <p class="section-kicker">Run modes</p>
+          <h2 id="commands-title">Interactive by default. Scriptable when needed.</h2>
+        </div>
+        <div class="command-list">
+          <div class="command-row">
+            <span>Interactive</span>
+            <code>npx @shipshitdev/v0</code>
+          </div>
+          <div class="command-row">
+            <span>Named repo</span>
+            <code>npx @shipshitdev/v0 my-product</code>
+          </div>
+          <div class="command-row">
+            <span>GitHub flow</span>
+            <code>npx @shipshitdev/v0 my-product --github --github-issue</code>
+          </div>
+          <div class="command-row">
+            <span>Smoke test</span>
+            <code>npx @shipshitdev/v0 /tmp/v0-smoke --yes --skip-agent --no-install --no-start</code>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>@shipshitdev/v0</span>
+      <span>Built for repo generation, agent handoff, and fast product starts.</span>
+    </footer>
+
+    <script>
+      const copyButton = document.querySelector('[data-copy-target]');
+      copyButton?.addEventListener('click', async () => {
+        const targetId = copyButton.getAttribute('data-copy-target');
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (!target) return;
+
+        await navigator.clipboard.writeText(target.textContent?.trim() ?? '');
+        const original = copyButton.textContent;
+        copyButton.textContent = 'Copied';
+        window.setTimeout(() => {
+          copyButton.textContent = original;
+        }, 1400);
+      });
+    </script>
+  </body>
+</html>

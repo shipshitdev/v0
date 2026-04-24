@@ -3,7 +3,7 @@ name: v0_overview
 description: v0 scaffolder project overview and current architecture
 type: project
 status: active
-last_verified: 2026-04-23
+last_verified: 2026-04-24
 topics: [v0, scaffolder, architecture, bun, codex]
 ---
 
@@ -21,20 +21,25 @@ With no positional target directory, the CLI enters the interactive flow and ask
 
 Generated projects are Bun/Turbo monorepos with selected app surfaces:
 
-- `apps/web` - Next.js marketing surface, port 3000.
-- `apps/app` - Next.js product app shell, port 3001.
-- `apps/desktop` - Vite React shell, port 3010.
-- `apps/mobile` - Vite React shell, port 3011.
-- `apps/extension` - Vite React shell, port 3012.
+- `apps/web` - public Next.js landing page, port 3000.
+- `apps/app` - Next.js product web app shell, port 3001.
+- `apps/desktop` - Electron shell that embeds the product web app.
+- `apps/mobile` - Expo mobile app.
+- `apps/extension` - Plasmo browser extension.
+- `apps/cli` - Commander-based CLI surface.
+- `apps/docs` - Nextra documentation site, port 3003, available but deselected by default.
 
 Generated defaults:
 
-- Apps: `web`, `app`, `desktop`, `mobile`, `extension`.
+- Default selected apps: `web`, `app`, `desktop`, `mobile`, `extension`, `cli`.
+- Available opt-in apps: `docs`.
 - Routes: `/overview`, `/new-task`, `/search`, `/inbox`, `/activities`.
 - UI package: `@shipshitdev/ui`.
 - Package manager: Bun.
 - Root workspace includes `apps/*` and `packages/*`.
 - `packages/.gitkeep` is generated so `rg ... apps packages` does not fail.
+- Generated repos include `.agents/skills` and `.agents/memory`.
+- `.claude` and `.codex` are generated as repo-local symlink shims into `.agents`.
 
 Generated root scripts include:
 
@@ -45,7 +50,7 @@ Generated root scripts include:
 - `lint` - `turbo run lint`.
 - `deps:update` - `bun update --latest`.
 
-The CLI defaults to running `bun install`, printing selected app scripts, and starting `apps/web` when selected.
+The CLI defaults to running `bun install`, printing selected app scripts, and starting the `apps/web` landing page when selected.
 
 ## Landing Page
 

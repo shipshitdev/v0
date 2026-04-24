@@ -2,7 +2,7 @@
 
 Opinionated Shipshit.dev project scaffolder.
 
-`v0` creates a Bun/Turbo monorepo with the default Shipshit.dev app surfaces, Next.js by default, `@shipshitdev/ui`, and the standard product routes:
+`v0` creates a Bun/Turbo monorepo with the default Shipshit.dev app surfaces, a public landing page, a product web app, `@shipshitdev/ui`, and the standard product routes:
 
 - `/overview`
 - `/new-task`
@@ -45,11 +45,13 @@ npx @shipshitdev/v0 /tmp/v0-smoke --yes --skip-agent --no-install --no-start
 
 Generated app surfaces:
 
-- `apps/web` - public Next.js surface
-- `apps/app` - authenticated Next.js app shell
-- `apps/desktop` - desktop-oriented React shell
-- `apps/mobile` - mobile-oriented React shell
-- `apps/extension` - browser extension-oriented React shell
+- `apps/web` - public Next.js landing page
+- `apps/app` - product Next.js web app with the selected routes
+- `apps/desktop` - Electron shell that embeds the product web app
+- `apps/mobile` - Expo mobile app
+- `apps/extension` - Plasmo browser extension
+- `apps/cli` - Commander CLI
+- `apps/docs` - Nextra documentation site, available but deselected by default
 
 Generated package baseline:
 
@@ -74,7 +76,7 @@ Generated package baseline:
 npx @shipshitdev/v0 my-product \
   --scope "AI inbox for founder-led sales" \
   --agent codex \
-  --apps web,app,desktop \
+  --apps web,app,desktop,docs \
   --routes overview,new-task,search,inbox,activities \
   --github \
   --github-repo shipshitdev/my-product \

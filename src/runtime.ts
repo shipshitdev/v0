@@ -50,25 +50,38 @@ export async function installDependencies(answers: ScaffoldAnswers): Promise<voi
 }
 
 function scriptDescription(app: AppSurface): string {
-  if (app === 'web') return 'apps/web marketing page at http://localhost:3000';
-  if (app === 'app') return 'apps/app product shell at http://localhost:3001';
-  if (app === 'desktop') return 'apps/desktop React shell at http://localhost:3010';
-  if (app === 'mobile') return 'apps/mobile React shell at http://localhost:3011';
-  return 'apps/extension React shell at http://localhost:3012';
+  if (app === 'web') return 'apps/web landing page at http://localhost:3000';
+  if (app === 'app') return 'apps/app product app at http://localhost:3001';
+  if (app === 'desktop') return 'apps/desktop (Electron wrapper for apps/app)';
+  if (app === 'mobile') return 'apps/mobile (Expo)';
+  if (app === 'extension') return 'apps/extension (Plasmo)';
+  if (app === 'cli') return 'apps/cli (Commander)';
+  if (app === 'docs') return 'apps/docs Nextra site at http://localhost:3003';
+  return `apps/${app}`;
+}
+
+function shellQuote(value: string): string {
+  if (/^[A-Za-z0-9_./:@+-]+$/.test(value)) return value;
+  return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
 export function printAppScripts(answers: ScaffoldAnswers): void {
-  console.log('\nApp scripts:');
+  const repoRoot = shellQuote(answers.targetDir);
+  console.log('\nRepo root:');
+  console.log(`  ${answers.targetDir}`);
+  console.log('\nOpen a shell there with:');
+  console.log(`  cd ${repoRoot}`);
+  console.log('\nApp scripts from that repo:');
   for (const app of answers.apps) {
     console.log(`  bun run dev:${app.padEnd(9)} ${scriptDescription(app)}`);
   }
 
   if (!answers.apps.includes('web')) {
-    console.log('\napps/web was not selected, so there is no marketing page to start.');
+    console.log('\napps/web was not selected, so there is no landing page to start.');
   } else if (answers.start) {
-    console.log('\nStarting the marketing page with: bun run dev:web');
+    console.log('\napps/web was started automatically from that repo.');
   } else {
-    console.log('\nMarketing page start skipped. Run bun run dev:web when ready.');
+    console.log(`\nLanding page start skipped. Run: cd ${repoRoot} && bun run dev:web`);
   }
 }
 
@@ -120,6 +133,12 @@ export async function startWebApp(answers: ScaffoldAnswers): Promise<void> {
 export function printStartedWebApp(answers: ScaffoldAnswers): void {
   if (!answers.apps.includes('web')) return;
 
-  console.log(`\nMarketing page started: http://localhost:3000`);
-  console.log(`Server log: ${logPath(answers, 'web-dev.log')}`);
+  const quotedRoot = shellQuote(answers.targetDir);
+  const log = logPath(answers, 'web-dev.log');
+  console.log('\napps/web process:');
+  console.log(`  Running from: ${answers.targetDir}`);
+  console.log(`  Command: cd ${quotedRoot} && bun run dev:web`);
+  console.log('  URL: http://localhost:3000');
+  console.log(`  Log: ${log}`);
+  console.log(`  Tail log: tail -f ${shellQuote(log)}`);
 }

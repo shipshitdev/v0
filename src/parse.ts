@@ -1,4 +1,4 @@
-import { AGENTS, DEFAULT_APPS, DEFAULT_ROUTES, GITHUB_VISIBILITIES, type Agent, type AppSurface, type CliOptions, type GithubVisibility, type RouteId } from './types';
+import { AGENTS, AVAILABLE_APPS, DEFAULT_ROUTES, GITHUB_VISIBILITIES, type Agent, type AppSurface, type CliOptions, type GithubVisibility, type RouteId } from './types';
 
 function splitList(value: string | undefined): string[] {
   return value
@@ -12,7 +12,7 @@ function splitList(value: string | undefined): string[] {
 function parseApps(value: string | undefined): AppSurface[] | undefined {
   const entries = splitList(value);
   if (entries.length === 0) return undefined;
-  const valid = new Set<string>(DEFAULT_APPS);
+  const valid = new Set<string>(AVAILABLE_APPS);
   const invalid = entries.filter((entry) => !valid.has(entry));
   if (invalid.length > 0) {
     throw new Error(`Unknown app surface: ${invalid.join(', ')}`);

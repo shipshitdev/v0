@@ -1,6 +1,6 @@
 {
   "name": "@shipshitdev/v0",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Opinionated Shipshit.dev project scaffolder.",
   "type": "module",
   "homepage": "https://v0.shipshit.dev",
@@ -41,6 +41,9 @@
     "prepare": "node scripts/link-local-bin.mjs",
     "site:build": "bun run build",
     "typecheck": "tsc --noEmit",
+    "lint": "bunx biome check src/ --formatter-enabled=false --assist-enabled=false --files-ignore-unknown=true",
+    "lint:fix": "bunx biome check --write src/",
+    "format:check": "bunx biome check src/ --linter-enabled=false --assist-enabled=false --files-ignore-unknown=true",
     "deps:update": "bun update --latest",
     "clean": "rm -rf dist"
   },

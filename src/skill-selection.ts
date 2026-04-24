@@ -43,6 +43,8 @@ const APP_AGENT_SKILLS: Record<AppSurface, readonly string[]> = {
   desktop: REACT_SURFACE_SKILLS,
   mobile: [...REACT_SURFACE_SKILLS, 'expo-architect', 'react-native-components'],
   extension: [...REACT_SURFACE_SKILLS, 'content-script-developer', 'plasmo-extension-architect'],
+  cli: [],
+  docs: [...NEXT_SURFACE_SKILLS],
 };
 
 const ROUTE_AGENT_SKILLS: Partial<Record<RouteId, readonly string[]>> = {

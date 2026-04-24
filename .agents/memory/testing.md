@@ -64,6 +64,14 @@ For true mobile screenshot validation, Chrome headless direct `--window-size=390
 Dynamic skill checks:
 
 ```bash
+rm -rf /tmp/v0-docs-default
+node dist/index.js /tmp/v0-docs-default --yes --scope "Default docs off" --agent codex --skip-agent --no-install --no-start
+test ! -d /tmp/v0-docs-default/apps/docs
+
+rm -rf /tmp/v0-docs-explicit
+node dist/index.js /tmp/v0-docs-explicit --yes --scope "Docs" --agent codex --skip-agent --no-install --no-start --apps web,app,docs --routes overview,search
+test -d /tmp/v0-docs-explicit/apps/docs
+
 rm -rf /tmp/v0-web-skills
 node dist/index.js /tmp/v0-web-skills --yes --scope "Web" --agent codex --skip-agent --no-install --no-start --apps web --routes overview,search
 test -d /tmp/v0-web-skills/.agents/skills/nextjs-validator

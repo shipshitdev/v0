@@ -15,7 +15,7 @@ Usage:
 Options:
   --scope <text>      Product scope for the scaffold agent
   --agent <agent>     claude or codex
-  --apps <list>       web,app,desktop,mobile,extension
+  --apps <list>       web,app,desktop,mobile,extension,cli,docs
   --routes <list>     overview,new-task,search,inbox,activities
   --github            Create a GitHub repo with gh (default: off)
   --github-repo <n>   Repo name, or owner/repo
@@ -41,7 +41,7 @@ function progressLabels(answers: Awaited<ReturnType<typeof collectAnswers>>): st
     labels.push('Install dependencies with Bun');
   }
   if (answers.start && answers.apps.includes('web')) {
-    labels.push('Start apps/web marketing page');
+    labels.push('Start apps/web landing page');
   }
 
   return labels;
@@ -67,7 +67,7 @@ async function main(): Promise<void> {
     }
 
     if (answers.start) {
-      await runStep('Start apps/web marketing page', () => startWebApp(answers));
+      await runStep('Start apps/web landing page', () => startWebApp(answers));
     }
 
     clearProgressPlan();

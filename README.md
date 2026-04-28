@@ -52,6 +52,7 @@ Generated app surfaces:
 - `apps/extension` - Plasmo browser extension
 - `apps/cli` - Commander CLI
 - `apps/docs` - Nextra documentation site, available but deselected by default
+- `apps/api` - NestJS 11 + Prisma 7 API server, available but deselected by default
 
 Generated package baseline:
 

@@ -57,6 +57,7 @@ function scriptDescription(app: AppSurface): string {
   if (app === 'extension') return 'apps/extension (Plasmo)';
   if (app === 'cli') return 'apps/cli (Commander)';
   if (app === 'docs') return 'apps/docs Nextra site at http://localhost:3003';
+  if (app === 'api') return 'apps/api NestJS API at http://localhost:3002';
   return `apps/${app}`;
 }
 

@@ -423,34 +423,36 @@ function globalsCss(): string {
 @utility text-secondary { color: var(--text-secondary); }
 @utility text-muted { color: var(--text-muted); }
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-html {
-  color-scheme: dark;
-  background: var(--bg-primary);
-}
+  html {
+    color-scheme: dark;
+    background: var(--bg-primary);
+  }
 
-body {
-  min-height: 100vh;
-  margin: 0;
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 40rem),
-    var(--bg-primary);
-  color: var(--text-primary);
-}
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 40rem),
+      var(--bg-primary);
+    color: var(--text-primary);
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-h1,
-h2,
-h3,
-p {
-  text-wrap: pretty;
+  h1,
+  h2,
+  h3,
+  p {
+    text-wrap: pretty;
+  }
 }
 
 ::-webkit-scrollbar { width: 8px; }
@@ -684,7 +686,9 @@ function webLandingPage(answers: ScaffoldAnswers): string {
               ? 'Browser extension'
               : app === 'cli'
                 ? 'Command line interface'
-                : 'Documentation site',
+                : app === 'docs'
+                  ? 'Documentation site'
+                  : 'NestJS API server',
   }));
   const routes = answers.routes.map((route) => ({
     label: routeTitle(route),
@@ -1758,6 +1762,347 @@ bun run dev:app
   });
 }
 
+async function writeApiApp(root: string, answers: ScaffoldAnswers): Promise<void> {
+  const appRoot = 'apps/api';
+
+  await writeJson(root, `${appRoot}/package.json`, {
+    name: `@${answers.packageName}/api`,
+    version: '0.0.1',
+    private: true,
+    scripts: {
+      postinstall: 'prisma generate',
+      predev: 'prisma generate',
+      prebuild: 'prisma generate',
+      dev: 'nest start --watch',
+      build: 'nest build',
+      start: 'node dist/main',
+      typecheck: 'prisma generate && tsc --noEmit',
+      lint: 'biome check src/',
+      clean: 'rm -rf dist src/generated',
+      'db:generate': 'prisma generate',
+      'db:migrate': 'prisma migrate dev',
+    },
+    dependencies: {
+      '@nestjs/common': '11.1.19',
+      '@nestjs/core': '11.1.19',
+      '@nestjs/platform-express': '11.1.19',
+      '@prisma/adapter-pg': '7.8.0',
+      '@prisma/client': '7.8.0',
+      dotenv: '17.4.2',
+      pg: '8.20.0',
+      'reflect-metadata': '0.2.2',
+      rxjs: '7.8.2',
+    },
+    devDependencies: {
+      '@nestjs/cli': '11.0.21',
+      '@nestjs/schematics': '11.0.10',
+      '@types/express': '5.0.3',
+      '@types/node': '25.6.0',
+      '@types/pg': '8.20.0',
+      prisma: '7.8.0',
+      typescript: '6.0.3',
+    },
+  });
+
+  await writeJson(root, `${appRoot}/tsconfig.json`, {
+    compilerOptions: {
+      module: 'CommonJS',
+      moduleResolution: 'node',
+      target: 'ES2022',
+      lib: ['ES2022'],
+      outDir: 'dist',
+      rootDir: 'src',
+      strict: true,
+      esModuleInterop: true,
+      forceConsistentCasingInFileNames: true,
+      skipLibCheck: true,
+      sourceMap: true,
+      experimentalDecorators: true,
+      emitDecoratorMetadata: true,
+      useDefineForClassFields: false,
+      ignoreDeprecations: '6.0',
+      types: ['node'],
+    },
+    include: ['src/**/*.ts'],
+    exclude: ['node_modules', 'dist'],
+  });
+
+  await writeJson(root, `${appRoot}/tsconfig.build.json`, {
+    extends: './tsconfig.json',
+    exclude: ['node_modules', 'dist', 'src/**/*.spec.ts'],
+  });
+
+  await writeJson(root, `${appRoot}/nest-cli.json`, {
+    $schema: 'https://json.schemastore.org/nest-cli',
+    collection: '@nestjs/schematics',
+    sourceRoot: 'src',
+    entryFile: 'main',
+    compilerOptions: {
+      tsConfigPath: './tsconfig.build.json',
+      webpack: false,
+      deleteOutDir: true,
+    },
+  });
+
+  await writeFile(root, `${appRoot}/src/main.ts`, `import 'reflect-metadata';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  const port = Number(process.env.PORT ?? 3002);
+  await app.listen(port);
+}
+
+bootstrap();
+`);
+
+  await writeFile(root, `${appRoot}/src/app.module.ts`, `import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PrismaModule } from './prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+`);
+
+  await writeFile(root, `${appRoot}/src/app.controller.ts`, `import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getStatus(): { status: string } {
+    return this.appService.getStatus();
+  }
+}
+`);
+
+  await writeFile(root, `${appRoot}/src/app.service.ts`, `import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getStatus(): { status: string } {
+    return { status: 'ok' };
+  }
+}
+`);
+
+  await writeFile(root, `${appRoot}/src/prisma/prisma.module.ts`, `import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+
+@Global()
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
+`);
+
+  await writeFile(root, `${appRoot}/src/prisma/prisma.service.ts`, `import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../generated/prisma/client';
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  constructor() {
+    super({
+      adapter: new PrismaPg({
+        connectionString: process.env.DATABASE_URL as string,
+      }),
+    });
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.$connect();
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.$disconnect();
+  }
+}
+`);
+
+  await writeFile(root, `${appRoot}/prisma/schema.prisma`, `generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+`);
+
+  await writeFile(root, `${appRoot}/prisma.config.ts`, `import 'dotenv/config';
+import { defineConfig } from 'prisma/config';
+
+export default defineConfig({
+  schema: 'prisma/schema.prisma',
+  migrations: {
+    path: 'prisma/migrations',
+  },
+  datasource: {
+    url: process.env.DATABASE_URL ?? '',
+  },
+});
+`);
+
+  await writeFile(root, `${appRoot}/.env.example`, `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/${answers.packageName}?schema=public"
+PORT=3002
+`);
+
+  await writeFile(root, `${appRoot}/.gitignore`, `src/generated/
+`);
+
+  await writeFile(root, `${appRoot}/Dockerfile`, `# syntax=docker/dockerfile:1.7
+# Build context must be the monorepo root:
+#   docker build -f apps/api/Dockerfile -t ${answers.packageName}-api .
+
+# Stage 1: production deps only
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY apps/api/package.json ./
+RUN npm install --omit=dev --ignore-scripts
+
+# Stage 2: full deps + prisma generate + nest build
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY apps/api/package.json ./
+RUN npm install --ignore-scripts
+COPY apps/api/ ./
+RUN npx prisma generate
+RUN npm run build
+
+# Stage 3: assemble slim artifact (prod node_modules + .prisma engine + dist)
+FROM node:22-alpine AS prune
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/dist ./dist
+COPY apps/api/package.json ./
+
+# Stage 4: runtime
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production PORT=3002
+COPY --from=prune /app ./
+USER node
+EXPOSE 3002
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\
+  CMD wget -qO- http://localhost:3002/ || exit 1
+CMD ["node", "dist/main"]
+`);
+
+  await writeFile(root, `${appRoot}/.dockerignore`, `node_modules
+dist
+src/generated
+.env
+.env.*
+!.env.example
+*.log
+coverage
+`);
+
+  await writeFile(root, `${appRoot}/README.md`, `# ${titleCase(answers.projectName)} API
+
+NestJS + Prisma + PostgreSQL backend. Listens on \`http://localhost:3002\`.
+
+## Setup
+
+\`\`\`bash
+cp apps/api/.env.example apps/api/.env
+# edit DATABASE_URL to point at your Postgres instance
+
+bun install
+bun run --cwd apps/api db:generate
+bun run --cwd apps/api db:migrate
+bun run dev:api
+\`\`\`
+
+## Database
+
+Add a migration after editing \`prisma/schema.prisma\`:
+
+\`\`\`bash
+bun run --cwd apps/api db:migrate
+\`\`\`
+
+Regenerate the Prisma client only:
+
+\`\`\`bash
+bun run --cwd apps/api db:generate
+\`\`\`
+
+## Build
+
+\`\`\`bash
+bun run --cwd apps/api build
+\`\`\`
+
+Output goes to \`apps/api/dist/\`. Start with \`bun run --cwd apps/api start\`.
+
+## Health Check
+
+\`GET /\` returns \`{ "status": "ok" }\` and is wired as the Docker \`HEALTHCHECK\` target.
+
+## Deploy
+
+The Dockerfile is multi-stage (\`node:22-alpine\`, non-root \`node\` user) and builds from the monorepo root.
+
+Build the image:
+
+\`\`\`bash
+docker build -f apps/api/Dockerfile -t ${answers.packageName}-api .
+\`\`\`
+
+### AWS ECS (Fargate)
+
+\`\`\`bash
+aws ecr get-login-password | docker login --username AWS --password-stdin <ECR_URI>
+docker tag ${answers.packageName}-api:latest <ECR_URI>:latest
+docker push <ECR_URI>:latest
+\`\`\`
+
+Set \`DATABASE_URL\` and \`PORT\` as ECS task environment variables. Use Secrets Manager for the URL.
+
+### GCP Cloud Run
+
+\`\`\`bash
+docker tag ${answers.packageName}-api gcr.io/<PROJECT>/${answers.packageName}-api
+docker push gcr.io/<PROJECT>/${answers.packageName}-api
+gcloud run deploy ${answers.packageName}-api \\
+  --image gcr.io/<PROJECT>/${answers.packageName}-api \\
+  --port 3002 \\
+  --set-env-vars DATABASE_URL=<connection-string>
+\`\`\`
+
+### Fly.io
+
+\`\`\`bash
+fly launch --dockerfile apps/api/Dockerfile --name ${answers.packageName}-api
+fly secrets set DATABASE_URL=postgresql://...
+fly deploy
+\`\`\`
+
+Provision managed Postgres with \`fly postgres create\` and attach it.
+`);
+}
+
 function scopeMarkdown(answers: ScaffoldAnswers): string {
   return `# ${answers.projectName}
 
@@ -1795,6 +2140,7 @@ function surfaceFramework(app: AppSurface): string {
   if (app === 'extension') return 'Plasmo';
   if (app === 'cli') return 'CLI';
   if (app === 'docs') return 'Nextra docs';
+  if (app === 'api') return 'NestJS API';
   return 'React';
 }
 
@@ -1810,6 +2156,7 @@ function appScriptDescription(app: AppSurface): string {
   if (app === 'extension') return 'starts the Plasmo extension dev server';
   if (app === 'cli') return 'runs the CLI in dev mode';
   if (app === 'docs') return 'starts the Nextra docs site at http://localhost:3003';
+  if (app === 'api') return 'starts the NestJS API at http://localhost:3002';
   return `starts apps/${app}`;
 }
 
@@ -1882,7 +2229,7 @@ async function writeWorkspaceFiles(root: string, answers: ScaffoldAnswers): Prom
       noEmit: true,
       isolatedModules: true,
       types: ['node'],
-      ignoreDeprecations: '5.0',
+      ignoreDeprecations: '6.0',
     },
     exclude: ['node_modules', 'dist', '.next', 'out'],
   });
@@ -1915,6 +2262,7 @@ trim_trailing_whitespace = false
         '!**/dist',
         '!**/build',
         '!**/out',
+        '!**/generated',
         '!**/coverage',
         '!**/*.snap',
         '!**/bun.lock',
@@ -2022,6 +2370,8 @@ export async function scaffoldProject(answers: ScaffoldAnswers): Promise<void> {
       await runStep(label, () => writeCliApp(root, answers));
     } else if (app === 'docs') {
       await runStep(label, () => writeDocsApp(root, answers));
+    } else if (app === 'api') {
+      await runStep(label, () => writeApiApp(root, answers));
     }
   }
 }

@@ -86,6 +86,64 @@ test ! -d /tmp/v0-mobile-extension-skills/.agents/skills/nextjs-validator
 test -d /tmp/v0-mobile-extension-skills/skills/task-prd-creator
 ```
 
+## API surface (NestJS + Prisma + Postgres)
+
+The `api` surface is opt-in (not in `DEFAULT_APPS`). It scaffolds NestJS 11 + Prisma 7 (with `@prisma/adapter-pg` driver adapter, `moduleFormat = "cjs"` for NestJS) and a multi-stage Dockerfile.
+
+Opt-in: api NOT in default scaffold:
+
+```bash
+rm -rf /tmp/v0-api-off
+node dist/index.js /tmp/v0-api-off --yes --scope "Api off" --agent codex --skip-agent --no-install --no-start
+test ! -d /tmp/v0-api-off/apps/api
+```
+
+Explicit `--apps ...,api` scaffolds:
+
+```bash
+rm -rf /tmp/v0-api
+node dist/index.js /tmp/v0-api --yes --scope "Api" --agent codex --skip-agent --no-install --no-start --apps web,api --routes overview
+test -d /tmp/v0-api/apps/api
+test -f /tmp/v0-api/apps/api/package.json
+test -f /tmp/v0-api/apps/api/nest-cli.json
+test -f /tmp/v0-api/apps/api/tsconfig.json
+test -f /tmp/v0-api/apps/api/tsconfig.build.json
+test -f /tmp/v0-api/apps/api/prisma/schema.prisma
+test -f /tmp/v0-api/apps/api/prisma.config.ts
+test -f /tmp/v0-api/apps/api/Dockerfile
+test -f /tmp/v0-api/apps/api/.dockerignore
+test -f /tmp/v0-api/apps/api/.env.example
+test -f /tmp/v0-api/apps/api/.gitignore
+test -f /tmp/v0-api/apps/api/src/main.ts
+test -f /tmp/v0-api/apps/api/src/app.module.ts
+test -f /tmp/v0-api/apps/api/src/app.controller.ts
+test -f /tmp/v0-api/apps/api/src/app.service.ts
+test -f /tmp/v0-api/apps/api/src/prisma/prisma.module.ts
+test -f /tmp/v0-api/apps/api/src/prisma/prisma.service.ts
+```
+
+Verify NestJS + Prisma deps present:
+
+```bash
+node -e "const p=require('/tmp/v0-api/apps/api/package.json'); for (const k of ['@nestjs/core','@nestjs/common','@nestjs/platform-express','@prisma/client']) if(!p.dependencies[k]) throw new Error('missing '+k); for (const k of ['@nestjs/cli','prisma']) if(!p.devDependencies[k]) throw new Error('missing dev '+k); console.log('deps ok')"
+```
+
+Generated app installs and Prisma schema validates:
+
+```bash
+rm -rf /tmp/v0-api-ts
+node dist/index.js /tmp/v0-api-ts --yes --scope "Api ts" --agent codex --skip-agent --no-start --apps api --routes overview
+cd /tmp/v0-api-ts && bun install
+cd /tmp/v0-api-ts/apps/api && bunx prisma validate && bunx prisma generate
+cd /tmp/v0-api-ts && bun run typecheck
+```
+
+Optional Docker build smoke (requires Docker daemon):
+
+```bash
+cd /tmp/v0-api-ts && docker build -f apps/api/Dockerfile -t v0-api-test . && docker image inspect v0-api-test >/dev/null
+```
+
 When testing auto-start:
 
 1. Run the CLI without `--no-start`.

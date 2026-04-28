@@ -1,6 +1,6 @@
 {
   "name": "@shipshitdev/v0",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Opinionated Shipshit.dev project scaffolder.",
   "type": "module",
   "homepage": "https://v0.shipshit.dev",

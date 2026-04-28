@@ -45,6 +45,7 @@ const APP_AGENT_SKILLS: Record<AppSurface, readonly string[]> = {
   extension: [...REACT_SURFACE_SKILLS, 'content-script-developer', 'plasmo-extension-architect'],
   cli: [],
   docs: [...NEXT_SURFACE_SKILLS],
+  api: [],
 };
 
 const ROUTE_AGENT_SKILLS: Partial<Record<RouteId, readonly string[]>> = {

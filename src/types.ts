@@ -1,4 +1,4 @@
-export const AVAILABLE_APPS = ['web', 'app', 'desktop', 'mobile', 'extension', 'cli', 'docs'] as const;
+export const AVAILABLE_APPS = ['web', 'app', 'desktop', 'mobile', 'extension', 'cli', 'docs', 'api'] as const;
 export const DEFAULT_APPS = ['web', 'app', 'desktop', 'mobile', 'extension', 'cli'] as const;
 export const DEFAULT_ROUTES = ['overview', 'new-task', 'search', 'inbox', 'activities'] as const;
 export const AGENTS = ['claude', 'codex'] as const;

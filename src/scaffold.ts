@@ -380,6 +380,256 @@ export default function ${title.replace(/\s+/g, '')}Page() {
 `;
 }
 
+// Design reference: https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1
+const DESIGN_TOKENS = {
+  colors: {
+    'primary': '#fafafa',
+    'bg-primary': '#050607',
+    'bg-secondary': '#0c0d10',
+    'bg-tertiary': '#131518',
+    'bg-elevated': '#1a1c21',
+    'bg-hover': '#20232a',
+    'text-primary': '#f4f4f5',
+    'text-secondary': '#b4b4bc',
+    'text-muted': '#6b6b78',
+    'accent': '#fafafa',
+    'accent-hover': '#e4e4e7',
+    'accent-foreground': '#050607',
+    'success': '#10b981',
+    'warning': '#f59e0b',
+    'danger': '#ef4444',
+    'agent': '#38bdf8',
+    'done': '#a855f7',
+  },
+  typography: {
+    sans: { fontFamily: 'DM Sans' },
+    mono: { fontFamily: 'JetBrains Mono' },
+  },
+  rounded: { sm: '4px', md: '6px', lg: '10px', xl: '16px' },
+  spacing: { base: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px' },
+} as const;
+
+function yamlScalar(value: string): string {
+  if (/[:#\[\]{}&*!|>'"%@`,\n]/.test(value) || value.startsWith(' ') || value.endsWith(' ')) {
+    return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  }
+  return value;
+}
+
+function designMd(answers: ScaffoldAnswers): string {
+  const t = DESIGN_TOKENS;
+  const name = yamlScalar(`${answers.projectName} Design System`);
+  const description = yamlScalar(
+    `Dark-mode design system for ${answers.projectName}. Linear-inspired: deep charcoal surfaces, crisp white typography, subtle elevated layers.`,
+  );
+
+  const colorLines = Object.entries(t.colors)
+    .map(([k, v]) => `  ${k}: "${v}"`)
+    .join('\n');
+
+  const componentBlock = `  button-primary:
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.accent-foreground}"
+    rounded: "{rounded.md}"
+    padding: 8px 16px
+  button-primary-hover:
+    backgroundColor: "{colors.accent-hover}"
+    textColor: "{colors.accent-foreground}"
+    rounded: "{rounded.md}"
+    padding: 8px 16px
+  button-ghost:
+    backgroundColor: transparent
+    textColor: "{colors.text-primary}"
+    rounded: "{rounded.md}"
+    padding: 8px 16px
+  button-ghost-hover:
+    backgroundColor: "{colors.bg-hover}"
+    textColor: "{colors.text-primary}"
+    rounded: "{rounded.md}"
+    padding: 8px 16px
+  card:
+    backgroundColor: "{colors.bg-elevated}"
+    rounded: "{rounded.lg}"
+    padding: 16px
+  input:
+    backgroundColor: "{colors.bg-secondary}"
+    textColor: "{colors.text-primary}"
+    rounded: "{rounded.md}"
+    padding: 8px 12px
+  nav:
+    backgroundColor: "{colors.bg-tertiary}"
+    textColor: "{colors.text-secondary}"
+    padding: 8px 16px
+  badge-success:
+    backgroundColor: "{colors.success}"
+    textColor: "{colors.bg-primary}"
+    rounded: "{rounded.sm}"
+    padding: 2px 8px
+  badge-warning:
+    backgroundColor: "{colors.warning}"
+    textColor: "{colors.bg-primary}"
+    rounded: "{rounded.sm}"
+    padding: 2px 8px
+  badge-danger:
+    backgroundColor: "{colors.danger}"
+    textColor: "{colors.bg-primary}"
+    rounded: "{rounded.sm}"
+    padding: 2px 8px
+  badge-agent:
+    backgroundColor: "{colors.agent}"
+    textColor: "{colors.bg-primary}"
+    rounded: "{rounded.sm}"
+    padding: 2px 8px
+  badge-done:
+    backgroundColor: "{colors.done}"
+    textColor: "{colors.bg-primary}"
+    rounded: "{rounded.sm}"
+    padding: 2px 8px
+  tooltip:
+    backgroundColor: "{colors.bg-hover}"
+    textColor: "{colors.text-secondary}"
+    rounded: "{rounded.md}"
+    padding: 4px 8px
+  link:
+    textColor: "{colors.primary}"
+  link-hover:
+    textColor: "{colors.accent-hover}"`;
+
+  const yaml = `---
+version: "alpha"
+name: ${name}
+description: ${description}
+
+colors:
+${colorLines}
+
+typography:
+  sans:
+    fontFamily: "${t.typography.sans.fontFamily}"
+  mono:
+    fontFamily: "${t.typography.mono.fontFamily}"
+
+rounded:
+  sm: ${t.rounded.sm}
+  md: ${t.rounded.md}
+  lg: ${t.rounded.lg}
+  xl: ${t.rounded.xl}
+
+spacing:
+  base: ${t.spacing.base}
+  sm: ${t.spacing.sm}
+  md: ${t.spacing.md}
+  lg: ${t.spacing.lg}
+  xl: ${t.spacing.xl}
+
+components:
+${componentBlock}
+---`;
+
+  const body = `## Overview
+
+${answers.projectName} uses a Linear-inspired dark design system optimized for developer tools and productivity interfaces. Deep charcoal surfaces, crisp white typography, and subtle elevation layers create a focused, distraction-free environment.
+
+Design reference: https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1
+
+## Colors
+
+The palette uses layered dark surfaces for visual hierarchy instead of shadows or outlines.
+
+**Surface layers (darkest to lightest):**
+- **bg-primary (#050607)** — page background, the darkest layer
+- **bg-secondary (#0c0d10)** — sidebar, nav panels
+- **bg-tertiary (#131518)** — grouped content areas
+- **bg-elevated (#1a1c21)** — cards, floating panels
+- **bg-hover (#20232a)** — interactive hover state
+
+**Text scale:**
+- **text-primary (#f4f4f5)** — headings, important content
+- **text-secondary (#b4b4bc)** — body text, descriptions
+- **text-muted (#6b6b78)** — labels, placeholders, timestamps
+
+**Borders** (not in YAML — these use rgba for transparency):
+- **border:** rgba(255, 255, 255, 0.10) — subtle dividers
+- **border-strong:** rgba(255, 255, 255, 0.18) — emphasized dividers
+
+**Semantic colors:**
+- **accent (#fafafa)** — primary actions, CTA buttons
+- **success (#10b981)** — positive states, confirmations
+- **warning (#f59e0b)** — caution, pending states
+- **danger (#ef4444)** — errors, destructive actions
+- **agent (#38bdf8)** — AI/agent activity indicators
+- **done (#a855f7)** — completed states
+
+## Typography
+
+Two typefaces cover all use cases:
+
+- **DM Sans** — all UI text: headings, body, labels, buttons. Variable weight 300–700.
+- **JetBrains Mono** — code blocks, terminal output, technical strings, monospaced data.
+
+System fonts are fallbacks only, never used as primary typeface.
+
+## Layout
+
+Built on a **4px base unit**. All spacing values are multiples of this base:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| base | 4px | Tight gaps: icon-to-text, inline elements |
+| sm | 8px | Element padding, list item gaps |
+| md | 16px | Card padding, section gaps |
+| lg | 24px | Section separators, major groupings |
+| xl | 32px | Page-level margins, hero spacing |
+
+Body background uses a subtle radial gradient overlay: \`radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 40rem)\` for depth.
+
+## Elevation & Depth
+
+Depth comes from **background color layering**, not box-shadows. Five surface layers (bg-primary → bg-hover) create visual hierarchy.
+
+Shadows are reserved for floating elements only:
+- **Tooltips, dropdowns:** \`rgba(0, 0, 0, 0.4) 0px 2px 4px\`
+- **Modals, sheets:** \`rgba(0, 0, 0, 0.6) 0px 4px 12px\`
+
+## Shapes
+
+Consistent corner radius scale:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| sm | 4px | Tags, badges, small pills |
+| md | 6px | Buttons, inputs, selects (default) |
+| lg | 10px | Cards, panels, containers |
+| xl | 16px | Dialogs, sheets, modals |
+
+## Components
+
+**Button (primary):** White accent background (#fafafa) with dark text (#050607). 6px radius, 8px/16px padding. Hover dims to #e4e4e7.
+
+**Button (ghost):** Transparent background, white text. Same radius and padding. Hover shows bg-hover layer.
+
+**Card:** bg-elevated background (#1a1c21). 10px radius, 16px padding. No border by default; optional rgba(255,255,255,0.10) border for emphasis.
+
+**Input:** bg-secondary background (#0c0d10). 6px radius, 8px/12px padding. Border on focus: rgba(255,255,255,0.18).
+
+## Do's and Don'ts
+
+**Do:**
+- Use \`bg-*\` utility classes, not raw hex values
+- Pair DM Sans with JetBrains Mono for code
+- Use the 5-layer surface hierarchy for depth
+- Use semantic colors (success/warning/danger) for status
+
+**Don't:**
+- Use light/white backgrounds — this is a dark-only system
+- Invent colors outside the defined palette
+- Use border-radius values larger than xl (16px)
+- Use box-shadow for layout hierarchy — use bg layers instead
+- Mix system fonts into primary text positions`;
+
+  return `${yaml}\n\n${body}\n`;
+}
+
 function globalsCss(): string {
   return `@import "tailwindcss";
 @source "../../../node_modules/@shipshitdev/ui/dist";
@@ -2181,6 +2431,8 @@ async function writeWorkspaceFiles(root: string, answers: ScaffoldAnswers): Prom
       typecheck: 'turbo run typecheck',
       lint: 'turbo run lint',
       'lint:fix': 'bunx biome check --write .',
+      'lint:design': 'bunx @google/design.md lint DESIGN.md',
+      'design:export': 'bunx @google/design.md export --format tailwind DESIGN.md',
       'format:check': 'bunx biome check . --linter-enabled=false --assist-enabled=false --files-ignore-unknown=true',
       postinstall: 'test -d node_modules/@shipshitdev/ui || (src=$(ls -d node_modules/.bun/@shipshitdev+ui@*/node_modules/@shipshitdev/ui 2>/dev/null | head -1) && [ -n "$src" ] && mkdir -p node_modules/@shipshitdev && ln -s "$(cd "$src" && pwd)" node_modules/@shipshitdev/ui) || true',
       'deps:update': 'bun update --latest',
@@ -2188,6 +2440,7 @@ async function writeWorkspaceFiles(root: string, answers: ScaffoldAnswers): Prom
     },
     devDependencies: {
       '@biomejs/biome': '2.4.12',
+      '@google/design.md': '0.1.1',
       '@types/node': '25.6.0',
       turbo: '2.9.6',
       typescript: '6.0.3',
@@ -2278,12 +2531,16 @@ trim_trailing_whitespace = false
     },
     linter: { enabled: true, rules: { a11y: { noLabelWithoutControl: 'off' }, recommended: true } },
   });
-  await writeFile(root, 'README.md', `# ${answers.projectName}\n\nGenerated with \`@shipshitdev/v0\`.\n\n## Start\n\n\`\`\`bash\nbun install\n${startCommand(answers.apps)}\n\`\`\`\n\n## App Scripts\n\n${appScriptLines(answers.apps)}\n\n## Update Dependencies\n\n\`\`\`bash\nbun run deps:update\n\`\`\`\n\n## Agent Workspace\n\n- \`.agents/skills\` - source of truth for selected dev workflow skills\n- \`.agents/memory\` - source of truth for project memory\n- \`.claude/skills\` and \`.claude/memory\` - relative symlinks into \`.agents\`\n- \`.codex/skills\` and \`.codex/memory\` - relative symlinks into \`.agents\`\n- \`skills\` - selected repo workflow skills for PRDs, planning, execution, review, and verification\n\n## Scope\n\n${answers.scope}\n`);
+  await writeFile(root, 'README.md', `# ${answers.projectName}\n\nGenerated with \`@shipshitdev/v0\`.\n\n## Start\n\n\`\`\`bash\nbun install\n${startCommand(answers.apps)}\n\`\`\`\n\n## App Scripts\n\n${appScriptLines(answers.apps)}\n\n## Update Dependencies\n\n\`\`\`bash\nbun run deps:update\n\`\`\`\n\n## Agent Workspace\n\n- \`.agents/skills\` - source of truth for selected dev workflow skills\n- \`.agents/memory\` - source of truth for project memory\n- \`.claude/skills\` and \`.claude/memory\` - relative symlinks into \`.agents\`\n- \`.codex/skills\` and \`.codex/memory\` - relative symlinks into \`.agents\`\n- \`skills\` - selected repo workflow skills for PRDs, planning, execution, review, and verification\n- \`DESIGN.md\` - machine-readable design system spec ([google-labs-code/design.md](https://github.com/google-labs-code/design.md)); validate with \`bun run lint:design\`\n\n## Scope\n\n${answers.scope}\n`);
 }
 
 async function writeV0Metadata(root: string, answers: ScaffoldAnswers): Promise<void> {
   await writeFile(root, '.v0/scope.md', scopeMarkdown(answers));
   await writeFile(root, '.v0/agent-prompt.md', buildAgentPrompt(answers));
+}
+
+async function writeDesignSystem(root: string, answers: ScaffoldAnswers): Promise<void> {
+  await writeFile(root, 'DESIGN.md', designMd(answers));
 }
 
 async function writePackagesWorkspace(root: string): Promise<void> {
@@ -2340,6 +2597,7 @@ export function scaffoldStepLabels(answers: ScaffoldAnswers): string[] {
     'Check target directory',
     'Create Bun/Turbo workspace',
     'Write v0 scope and agent prompt',
+    'Write design system (DESIGN.md)',
     'Reserve packages workspace',
     'Create agent skills and memory workspace',
     'Create repo workflow skills',
@@ -2352,6 +2610,7 @@ export async function scaffoldProject(answers: ScaffoldAnswers): Promise<void> {
   await runStep('Check target directory', () => prepareTarget(root));
   await runStep('Create Bun/Turbo workspace', () => writeWorkspaceFiles(root, answers));
   await runStep('Write v0 scope and agent prompt', () => writeV0Metadata(root, answers));
+  await runStep('Write design system (DESIGN.md)', () => writeDesignSystem(root, answers));
   await runStep('Reserve packages workspace', () => writePackagesWorkspace(root));
   await runStep('Create agent skills and memory workspace', () => writeAgentWorkspace(root, answers));
   await runStep('Create repo workflow skills', () => writeRepoSkills(root, answers));

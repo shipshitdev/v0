@@ -4,9 +4,15 @@ import { fileURLToPath } from 'node:url';
 import { buildAgentPrompt } from './agent';
 import { runStep } from './progress';
 import { selectedAgentSkills, selectedRepoSkills } from './skill-selection';
-import type { AppSurface, RouteId, ScaffoldAnswers } from './types';
+import type { AppSurface, RouteId, ScaffoldAnswers, Template } from './types';
 
 const UI_VERSION = '^0.6.0';
+const FONT_VERSIONS: Record<Template, string> = {
+  command: '5.2.8',
+  studio: '5.2.8',
+  corporate: '5.2.8',
+  candy: '5.2.8',
+};
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SKILL_POOL_DIR = path.resolve(DIST_DIR, '..', 'skills');
 
@@ -380,34 +386,149 @@ export default function ${title.replace(/\s+/g, '')}Page() {
 `;
 }
 
+type DesignTokens = {
+  colorScheme: 'dark' | 'light';
+  colors: Record<string, string>;
+  border: { default: string; strong: string };
+  typography: { sans: { fontFamily: string; fontsource: string }; mono: { fontFamily: string } };
+  rounded: { sm: string; md: string; lg: string; xl: string };
+  spacing: { base: string; sm: string; md: string; lg: string; xl: string };
+  description: string;
+  reference: string;
+  gradient: string;
+};
+
 // Design reference: https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1
-const DESIGN_TOKENS = {
-  colors: {
-    'primary': '#fafafa',
-    'bg-primary': '#050607',
-    'bg-secondary': '#0c0d10',
-    'bg-tertiary': '#131518',
-    'bg-elevated': '#1a1c21',
-    'bg-hover': '#20232a',
-    'text-primary': '#f4f4f5',
-    'text-secondary': '#b4b4bc',
-    'text-muted': '#6b6b78',
-    'accent': '#fafafa',
-    'accent-hover': '#e4e4e7',
-    'accent-foreground': '#050607',
-    'success': '#10b981',
-    'warning': '#f59e0b',
-    'danger': '#ef4444',
-    'agent': '#38bdf8',
-    'done': '#a855f7',
+const TEMPLATE_TOKENS: Record<Template, DesignTokens> = {
+  command: {
+    colorScheme: 'dark',
+    colors: {
+      'primary': '#fafafa',
+      'bg-primary': '#050607',
+      'bg-secondary': '#0c0d10',
+      'bg-tertiary': '#131518',
+      'bg-elevated': '#1a1c21',
+      'bg-hover': '#20232a',
+      'text-primary': '#f4f4f5',
+      'text-secondary': '#b4b4bc',
+      'text-muted': '#6b6b78',
+      'accent': '#fafafa',
+      'accent-hover': '#e4e4e7',
+      'accent-foreground': '#050607',
+      'success': '#10b981',
+      'warning': '#f59e0b',
+      'danger': '#ef4444',
+      'agent': '#38bdf8',
+      'done': '#a855f7',
+    },
+    border: { default: 'rgba(255, 255, 255, 0.10)', strong: 'rgba(255, 255, 255, 0.18)' },
+    typography: {
+      sans: { fontFamily: 'DM Sans', fontsource: '@fontsource/dm-sans' },
+      mono: { fontFamily: 'JetBrains Mono' },
+    },
+    rounded: { sm: '4px', md: '6px', lg: '10px', xl: '16px' },
+    spacing: { base: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px' },
+    description: 'Dark-mode command center. Linear-inspired: deep charcoal surfaces, crisp white typography, subtle elevated layers.',
+    reference: 'https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1',
+    gradient: 'radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 40rem)',
   },
-  typography: {
-    sans: { fontFamily: 'DM Sans' },
-    mono: { fontFamily: 'JetBrains Mono' },
+  studio: {
+    colorScheme: 'light',
+    colors: {
+      'primary': '#0f172a',
+      'bg-primary': '#ffffff',
+      'bg-secondary': '#fafaf8',
+      'bg-tertiary': '#f5f5f0',
+      'bg-elevated': '#ffffff',
+      'bg-hover': '#f0f0eb',
+      'text-primary': '#0f172a',
+      'text-secondary': '#475569',
+      'text-muted': '#94a3b8',
+      'accent': '#2563eb',
+      'accent-hover': '#1d4ed8',
+      'accent-foreground': '#ffffff',
+      'success': '#16a34a',
+      'warning': '#d97706',
+      'danger': '#dc2626',
+      'agent': '#2563eb',
+      'done': '#7c3aed',
+    },
+    border: { default: 'rgba(0, 0, 0, 0.08)', strong: 'rgba(0, 0, 0, 0.15)' },
+    typography: {
+      sans: { fontFamily: 'Inter', fontsource: '@fontsource/inter' },
+      mono: { fontFamily: 'JetBrains Mono' },
+    },
+    rounded: { sm: '6px', md: '8px', lg: '12px', xl: '16px' },
+    spacing: { base: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px' },
+    description: 'Light workspace aesthetic. Notion/Stripe-inspired: warm white surfaces, blue accents, clean readable typography.',
+    reference: '',
+    gradient: 'radial-gradient(circle at top, rgba(37, 99, 235, 0.03), transparent 40rem)',
   },
-  rounded: { sm: '4px', md: '6px', lg: '10px', xl: '16px' },
-  spacing: { base: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px' },
-} as const;
+  corporate: {
+    colorScheme: 'light',
+    colors: {
+      'primary': '#0f172a',
+      'bg-primary': '#f8fafc',
+      'bg-secondary': '#f1f5f9',
+      'bg-tertiary': '#e2e8f0',
+      'bg-elevated': '#ffffff',
+      'bg-hover': '#e2e8f0',
+      'text-primary': '#0f172a',
+      'text-secondary': '#334155',
+      'text-muted': '#64748b',
+      'accent': '#0f172a',
+      'accent-hover': '#1e293b',
+      'accent-foreground': '#f8fafc',
+      'success': '#059669',
+      'warning': '#d97706',
+      'danger': '#dc2626',
+      'agent': '#0284c7',
+      'done': '#7c3aed',
+    },
+    border: { default: 'rgba(0, 0, 0, 0.06)', strong: 'rgba(0, 0, 0, 0.12)' },
+    typography: {
+      sans: { fontFamily: 'Geist Sans', fontsource: '@fontsource/geist-sans' },
+      mono: { fontFamily: 'Geist Mono' },
+    },
+    rounded: { sm: '4px', md: '6px', lg: '8px', xl: '12px' },
+    spacing: { base: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px' },
+    description: 'Professional clean aesthetic. Mercury-inspired: cool slate surfaces, navy accents, structured corporate feel.',
+    reference: '',
+    gradient: 'radial-gradient(circle at top, rgba(15, 23, 42, 0.02), transparent 40rem)',
+  },
+  candy: {
+    colorScheme: 'light',
+    colors: {
+      'primary': '#18181b',
+      'bg-primary': '#fefefe',
+      'bg-secondary': '#faf5ff',
+      'bg-tertiary': '#f3e8ff',
+      'bg-elevated': '#ffffff',
+      'bg-hover': '#ede9fe',
+      'text-primary': '#18181b',
+      'text-secondary': '#52525b',
+      'text-muted': '#a1a1aa',
+      'accent': '#7c3aed',
+      'accent-hover': '#6d28d9',
+      'accent-foreground': '#ffffff',
+      'success': '#22c55e',
+      'warning': '#f59e0b',
+      'danger': '#ef4444',
+      'agent': '#8b5cf6',
+      'done': '#06b6d4',
+    },
+    border: { default: 'rgba(0, 0, 0, 0.06)', strong: 'rgba(0, 0, 0, 0.12)' },
+    typography: {
+      sans: { fontFamily: 'Plus Jakarta Sans', fontsource: '@fontsource/plus-jakarta-sans' },
+      mono: { fontFamily: 'JetBrains Mono' },
+    },
+    rounded: { sm: '8px', md: '12px', lg: '16px', xl: '20px' },
+    spacing: { base: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px' },
+    description: 'Playful, rounded aesthetic. Figma-inspired: bright white surfaces, violet accents, generous border radius.',
+    reference: '',
+    gradient: 'radial-gradient(circle at top, rgba(124, 58, 237, 0.04), transparent 40rem)',
+  },
+};
 
 function yamlScalar(value: string): string {
   if (/[:#\[\]{}&*!|>'"%@`,\n]/.test(value) || value.startsWith(' ') || value.endsWith(' ')) {
@@ -417,10 +538,10 @@ function yamlScalar(value: string): string {
 }
 
 function designMd(answers: ScaffoldAnswers): string {
-  const t = DESIGN_TOKENS;
+  const t = TEMPLATE_TOKENS[answers.template];
   const name = yamlScalar(`${answers.projectName} Design System`);
   const description = yamlScalar(
-    `Dark-mode design system for ${answers.projectName}. Linear-inspired: deep charcoal surfaces, crisp white typography, subtle elevated layers.`,
+    `${t.description.replace(/\.$/, '')} for ${answers.projectName}.`,
   );
 
   const colorLines = Object.entries(t.colors)
@@ -526,70 +647,72 @@ components:
 ${componentBlock}
 ---`;
 
+  const isDark = t.colorScheme === 'dark';
+  const surfaceDirection = isDark ? 'darkest to lightest' : 'lightest to darkest';
+  const refLine = t.reference ? `\nDesign reference: ${t.reference}\n` : '';
+
   const body = `## Overview
 
-${answers.projectName} uses a Linear-inspired dark design system optimized for developer tools and productivity interfaces. Deep charcoal surfaces, crisp white typography, and subtle elevation layers create a focused, distraction-free environment.
-
-Design reference: https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1
-
+${answers.projectName} uses a ${t.description.toLowerCase()}
+${refLine}
 ## Colors
 
-The palette uses layered dark surfaces for visual hierarchy instead of shadows or outlines.
+The palette uses layered ${isDark ? 'dark' : 'light'} surfaces for visual hierarchy instead of shadows or outlines.
 
-**Surface layers (darkest to lightest):**
-- **bg-primary (#050607)** — page background, the darkest layer
-- **bg-secondary (#0c0d10)** — sidebar, nav panels
-- **bg-tertiary (#131518)** — grouped content areas
-- **bg-elevated (#1a1c21)** — cards, floating panels
-- **bg-hover (#20232a)** — interactive hover state
+**Surface layers (${surfaceDirection}):**
+- **bg-primary (${t.colors['bg-primary']})** — page background
+- **bg-secondary (${t.colors['bg-secondary']})** — sidebar, nav panels
+- **bg-tertiary (${t.colors['bg-tertiary']})** — grouped content areas
+- **bg-elevated (${t.colors['bg-elevated']})** — cards, floating panels
+- **bg-hover (${t.colors['bg-hover']})** — interactive hover state
 
 **Text scale:**
-- **text-primary (#f4f4f5)** — headings, important content
-- **text-secondary (#b4b4bc)** — body text, descriptions
-- **text-muted (#6b6b78)** — labels, placeholders, timestamps
+- **text-primary (${t.colors['text-primary']})** — headings, important content
+- **text-secondary (${t.colors['text-secondary']})** — body text, descriptions
+- **text-muted (${t.colors['text-muted']})** — labels, placeholders, timestamps
 
 **Borders** (not in YAML — these use rgba for transparency):
-- **border:** rgba(255, 255, 255, 0.10) — subtle dividers
-- **border-strong:** rgba(255, 255, 255, 0.18) — emphasized dividers
+- **border:** ${t.border.default} — subtle dividers
+- **border-strong:** ${t.border.strong} — emphasized dividers
 
 **Semantic colors:**
-- **accent (#fafafa)** — primary actions, CTA buttons
-- **success (#10b981)** — positive states, confirmations
-- **warning (#f59e0b)** — caution, pending states
-- **danger (#ef4444)** — errors, destructive actions
-- **agent (#38bdf8)** — AI/agent activity indicators
-- **done (#a855f7)** — completed states
+- **accent (${t.colors['accent']})** — primary actions, CTA buttons
+- **success (${t.colors['success']})** — positive states, confirmations
+- **warning (${t.colors['warning']})** — caution, pending states
+- **danger (${t.colors['danger']})** — errors, destructive actions
+- **agent (${t.colors['agent']})** — AI/agent activity indicators
+- **done (${t.colors['done']})** — completed states
 
 ## Typography
 
 Two typefaces cover all use cases:
 
-- **DM Sans** — all UI text: headings, body, labels, buttons. Variable weight 300–700.
-- **JetBrains Mono** — code blocks, terminal output, technical strings, monospaced data.
+- **${t.typography.sans.fontFamily}** — all UI text: headings, body, labels, buttons.
+- **${t.typography.mono.fontFamily}** — code blocks, terminal output, technical strings, monospaced data.
 
 System fonts are fallbacks only, never used as primary typeface.
 
 ## Layout
 
-Built on a **4px base unit**. All spacing values are multiples of this base:
+Built on a **${t.spacing.base} base unit**. All spacing values are multiples of this base:
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| base | 4px | Tight gaps: icon-to-text, inline elements |
-| sm | 8px | Element padding, list item gaps |
-| md | 16px | Card padding, section gaps |
-| lg | 24px | Section separators, major groupings |
-| xl | 32px | Page-level margins, hero spacing |
+| base | ${t.spacing.base} | Tight gaps: icon-to-text, inline elements |
+| sm | ${t.spacing.sm} | Element padding, list item gaps |
+| md | ${t.spacing.md} | Card padding, section gaps |
+| lg | ${t.spacing.lg} | Section separators, major groupings |
+| xl | ${t.spacing.xl} | Page-level margins, hero spacing |
 
-Body background uses a subtle radial gradient overlay: \`radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 40rem)\` for depth.
+Body background uses a subtle radial gradient overlay: \`${t.gradient}\` for depth.
 
 ## Elevation & Depth
 
 Depth comes from **background color layering**, not box-shadows. Five surface layers (bg-primary → bg-hover) create visual hierarchy.
 
 Shadows are reserved for floating elements only:
-- **Tooltips, dropdowns:** \`rgba(0, 0, 0, 0.4) 0px 2px 4px\`
-- **Modals, sheets:** \`rgba(0, 0, 0, 0.6) 0px 4px 12px\`
+- **Tooltips, dropdowns:** \`rgba(0, 0, 0, ${isDark ? '0.4' : '0.08'}) 0px 2px 4px\`
+- **Modals, sheets:** \`rgba(0, 0, 0, ${isDark ? '0.6' : '0.15'}) 0px 4px 12px\`
 
 ## Shapes
 
@@ -597,71 +720,73 @@ Consistent corner radius scale:
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| sm | 4px | Tags, badges, small pills |
-| md | 6px | Buttons, inputs, selects (default) |
-| lg | 10px | Cards, panels, containers |
-| xl | 16px | Dialogs, sheets, modals |
+| sm | ${t.rounded.sm} | Tags, badges, small pills |
+| md | ${t.rounded.md} | Buttons, inputs, selects (default) |
+| lg | ${t.rounded.lg} | Cards, panels, containers |
+| xl | ${t.rounded.xl} | Dialogs, sheets, modals |
 
 ## Components
 
-**Button (primary):** White accent background (#fafafa) with dark text (#050607). 6px radius, 8px/16px padding. Hover dims to #e4e4e7.
+**Button (primary):** Accent background (${t.colors['accent']}) with ${isDark ? 'dark' : 'white'} text (${t.colors['accent-foreground']}). ${t.rounded.md} radius, 8px/16px padding. Hover shifts to ${t.colors['accent-hover']}.
 
-**Button (ghost):** Transparent background, white text. Same radius and padding. Hover shows bg-hover layer.
+**Button (ghost):** Transparent background, ${isDark ? 'white' : 'dark'} text. Same radius and padding. Hover shows bg-hover layer.
 
-**Card:** bg-elevated background (#1a1c21). 10px radius, 16px padding. No border by default; optional rgba(255,255,255,0.10) border for emphasis.
+**Card:** bg-elevated background (${t.colors['bg-elevated']}). ${t.rounded.lg} radius, 16px padding. No border by default; optional ${t.border.default} border for emphasis.
 
-**Input:** bg-secondary background (#0c0d10). 6px radius, 8px/12px padding. Border on focus: rgba(255,255,255,0.18).
+**Input:** bg-secondary background (${t.colors['bg-secondary']}). ${t.rounded.md} radius, 8px/12px padding. Border on focus: ${t.border.strong}.
 
 ## Do's and Don'ts
 
 **Do:**
 - Use \`bg-*\` utility classes, not raw hex values
-- Pair DM Sans with JetBrains Mono for code
+- Pair ${t.typography.sans.fontFamily} with ${t.typography.mono.fontFamily} for code
 - Use the 5-layer surface hierarchy for depth
 - Use semantic colors (success/warning/danger) for status
 
 **Don't:**
-- Use light/white backgrounds — this is a dark-only system
+- Use ${isDark ? 'light/white' : 'dark'} backgrounds — this is a ${t.colorScheme}-only system
 - Invent colors outside the defined palette
-- Use border-radius values larger than xl (16px)
+- Use border-radius values larger than xl (${t.rounded.xl})
 - Use box-shadow for layout hierarchy — use bg layers instead
 - Mix system fonts into primary text positions`;
 
   return `${yaml}\n\n${body}\n`;
 }
 
-function globalsCss(): string {
+function globalsCss(template: Template): string {
+  const t = TEMPLATE_TOKENS[template];
+  const c = t.colors;
   return `@import "tailwindcss";
 @source "../../../node_modules/@shipshitdev/ui/dist";
 
 :root {
-  --bg-primary: #050607;
-  --bg-secondary: #0c0d10;
-  --bg-tertiary: #131518;
-  --bg-elevated: #1a1c21;
-  --bg-hover: #20232a;
-  --text-primary: #f4f4f5;
-  --text-secondary: #b4b4bc;
-  --text-muted: #6b6b78;
+  --bg-primary: ${c['bg-primary']};
+  --bg-secondary: ${c['bg-secondary']};
+  --bg-tertiary: ${c['bg-tertiary']};
+  --bg-elevated: ${c['bg-elevated']};
+  --bg-hover: ${c['bg-hover']};
+  --text-primary: ${c['text-primary']};
+  --text-secondary: ${c['text-secondary']};
+  --text-muted: ${c['text-muted']};
 }
 
 @theme {
-  --color-border: rgba(255, 255, 255, 0.10);
-  --color-border-strong: rgba(255, 255, 255, 0.18);
-  --color-accent: #fafafa;
-  --color-accent-hover: #e4e4e7;
-  --color-accent-foreground: #050607;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-agent: #38bdf8;
-  --color-done: #a855f7;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", monospace;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 16px;
+  --color-border: ${t.border.default};
+  --color-border-strong: ${t.border.strong};
+  --color-accent: ${c['accent']};
+  --color-accent-hover: ${c['accent-hover']};
+  --color-accent-foreground: ${c['accent-foreground']};
+  --color-success: ${c['success']};
+  --color-warning: ${c['warning']};
+  --color-danger: ${c['danger']};
+  --color-agent: ${c['agent']};
+  --color-done: ${c['done']};
+  --font-sans: "${t.typography.sans.fontFamily}", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "${t.typography.mono.fontFamily}", "SF Mono", monospace;
+  --radius-sm: ${t.rounded.sm};
+  --radius-md: ${t.rounded.md};
+  --radius-lg: ${t.rounded.lg};
+  --radius-xl: ${t.rounded.xl};
 }
 
 @utility bg-primary { background-color: var(--bg-primary); }
@@ -679,7 +804,7 @@ function globalsCss(): string {
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: ${t.colorScheme};
     background: var(--bg-primary);
   }
 
@@ -687,7 +812,7 @@ function globalsCss(): string {
     min-height: 100vh;
     margin: 0;
     background:
-      radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 40rem),
+      ${t.gradient},
       var(--bg-primary);
     color: var(--text-primary);
   }
@@ -874,10 +999,11 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 }
 
 function appLayout(_surface: 'web' | 'app', answers: ScaffoldAnswers): string {
+  const fontPkg = TEMPLATE_TOKENS[answers.template].typography.sans.fontsource;
   return `import type { Metadata } from 'next';
-import '@fontsource/dm-sans/400.css';
-import '@fontsource/dm-sans/500.css';
-import '@fontsource/dm-sans/600.css';
+import '${fontPkg}/400.css';
+import '${fontPkg}/500.css';
+import '${fontPkg}/600.css';
 import './globals.css';
 import { WorkspaceShell } from './workspace-shell';
 
@@ -899,10 +1025,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 function webLandingLayout(answers: ScaffoldAnswers): string {
+  const fontPkg = TEMPLATE_TOKENS[answers.template].typography.sans.fontsource;
   return `import type { Metadata } from 'next';
-import '@fontsource/dm-sans/400.css';
-import '@fontsource/dm-sans/500.css';
-import '@fontsource/dm-sans/600.css';
+import '${fontPkg}/400.css';
+import '${fontPkg}/500.css';
+import '${fontPkg}/600.css';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -1082,7 +1209,7 @@ async function writeNextApp(root: string, surface: 'web' | 'app', answers: Scaff
       clean: 'rm -rf .next out',
     },
     dependencies: {
-      '@fontsource/dm-sans': '5.2.8',
+      [TEMPLATE_TOKENS[answers.template].typography.sans.fontsource]: FONT_VERSIONS[answers.template],
       '@shipshitdev/ui': UI_VERSION,
       next: '16.2.4',
       react: '19.2.5',
@@ -1111,7 +1238,7 @@ async function writeNextApp(root: string, surface: 'web' | 'app', answers: Scaff
     exclude: ['node_modules'],
   });
   await writeFile(root, `${appRoot}/postcss.config.mjs`, `export default {\n  plugins: {\n    '@tailwindcss/postcss': {},\n  },\n};\n`);
-  await writeFile(root, `${appRoot}/app/globals.css`, globalsCss());
+  await writeFile(root, `${appRoot}/app/globals.css`, globalsCss(answers.template));
 
   if (surface === 'web') {
     await writeFile(root, `${appRoot}/app/layout.tsx`, webLandingLayout(answers));
@@ -1437,6 +1564,8 @@ contextBridge.exposeInMainWorld('api', {
 });
 `);
 
+  const dt = TEMPLATE_TOKENS[answers.template];
+  const googleFontFamily = dt.typography.sans.fontFamily.replace(/ /g, '+');
   await writeFile(root, `${appRoot}/src/renderer/index.html`, `<!doctype html>
 <html lang="en">
   <head>
@@ -1444,15 +1573,15 @@ contextBridge.exposeInMainWorld('api', {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=${googleFontFamily}:wght@400;500;600&display=swap" rel="stylesheet" />
     <title>${answers.projectName}</title>
   </head>
-  <body style="margin:0;background:#050607;color:#f4f4f5;font-family:'DM Sans',system-ui,sans-serif;">
+  <body style="margin:0;background:${dt.colors['bg-primary']};color:${dt.colors['text-primary']};font-family:'${dt.typography.sans.fontFamily}',system-ui,sans-serif;">
     <main style="display:grid;min-height:100vh;place-items:center;padding:32px;text-align:center;">
       <div>
-        <p style="margin:0 0 12px;color:#38bdf8;font:600 12px monospace;text-transform:uppercase;">Desktop shell</p>
+        <p style="margin:0 0 12px;color:${dt.colors['agent']};font:600 12px monospace;text-transform:uppercase;">Desktop shell</p>
         <h1 style="margin:0;font-size:32px;">${answers.projectName}</h1>
-        <p style="margin:12px auto 0;max-width:420px;color:#b4b4bc;line-height:1.6;">
+        <p style="margin:12px auto 0;max-width:420px;color:${dt.colors['text-secondary']};line-height:1.6;">
           Start apps/app and set APP_URL to embed the deployed product app in this desktop shell.
         </p>
       </div>

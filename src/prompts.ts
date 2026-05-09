@@ -4,15 +4,18 @@ import { hasCommand } from "./command";
 import {
 	AGENTS,
 	AVAILABLE_APPS,
+	AVAILABLE_TEMPLATES,
 	type Agent,
 	type AppSurface,
 	type CliOptions,
 	DEFAULT_APPS,
 	DEFAULT_ROUTES,
+	DEFAULT_TEMPLATE,
 	GITHUB_VISIBILITIES,
 	type GithubVisibility,
 	type RouteId,
 	type ScaffoldAnswers,
+	type Template,
 } from "./types";
 
 function slugify(value: string): string {
@@ -38,6 +41,13 @@ async function detectInstalledAgents(): Promise<Agent[]> {
 function formatAgents(agents: readonly Agent[]): string {
 	return agents.join(" or ");
 }
+
+const TEMPLATE_DESCRIPTIONS: Record<Template, string> = {
+	command: "Dark command center — Linear-inspired, charcoal + white accent",
+	studio: "Light workspace — Notion/Stripe-like, warm white + blue accent",
+	corporate: "Professional — Mercury-like, cool slate + navy accent",
+	candy: "Playful — Figma-like, bright white + violet accent, rounded",
+};
 
 function routeLabel(route: RouteId): string {
 	return route === "new-task"
@@ -109,6 +119,18 @@ export async function collectAnswers(
 			`${agent} is not installed or available on PATH. Installed agents: ${formatAgents(installedAgents)}.`,
 		);
 	}
+	const template =
+		options.template ??
+		(interactive
+			? await select<Template>({
+					message: "Design template",
+					default: DEFAULT_TEMPLATE,
+					choices: AVAILABLE_TEMPLATES.map((t) => ({
+						name: `${t} — ${TEMPLATE_DESCRIPTIONS[t]}`,
+						value: t,
+					})),
+				})
+			: DEFAULT_TEMPLATE);
 	const scope =
 		options.scope ??
 		(interactive
@@ -189,6 +211,7 @@ export async function collectAnswers(
 		targetDir,
 		scope,
 		agent,
+		template,
 		apps: apps as AppSurface[],
 		routes: routes as RouteId[],
 		skipAgent: options.skipAgent,

@@ -1,4 +1,4 @@
-import { AGENTS, AVAILABLE_APPS, DEFAULT_ROUTES, GITHUB_VISIBILITIES, type Agent, type AppSurface, type CliOptions, type GithubVisibility, type RouteId } from './types';
+import { AGENTS, AVAILABLE_APPS, AVAILABLE_TEMPLATES, DEFAULT_ROUTES, GITHUB_VISIBILITIES, type Agent, type AppSurface, type CliOptions, type GithubVisibility, type RouteId, type Template } from './types';
 
 function splitList(value: string | undefined): string[] {
   return value
@@ -41,6 +41,12 @@ function parseGithubVisibility(value: string | undefined): GithubVisibility | un
   if (!value) return undefined;
   if ((GITHUB_VISIBILITIES as readonly string[]).includes(value)) return value as GithubVisibility;
   throw new Error(`Unknown GitHub visibility: ${value}. Use private or public.`);
+}
+
+function parseTemplate(value: string | undefined): Template | undefined {
+  if (!value) return undefined;
+  if ((AVAILABLE_TEMPLATES as readonly string[]).includes(value)) return value as Template;
+  throw new Error(`Unknown template: ${value}. Use ${AVAILABLE_TEMPLATES.join(', ')}.`);
 }
 
 export function parseArgs(argv: string[]): CliOptions {
@@ -103,6 +109,10 @@ export function parseArgs(argv: string[]): CliOptions {
     if (arg === '--github-visibility') {
       options.github = true;
       options.githubVisibility = parseGithubVisibility(next());
+      continue;
+    }
+    if (arg === '--template') {
+      options.template = parseTemplate(next());
       continue;
     }
     if (arg === '--scope') {

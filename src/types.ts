@@ -3,16 +3,20 @@ export const DEFAULT_APPS = ['web', 'app', 'desktop', 'mobile', 'extension', 'cl
 export const DEFAULT_ROUTES = ['overview', 'new-task', 'search', 'inbox', 'activities'] as const;
 export const AGENTS = ['claude', 'codex'] as const;
 export const GITHUB_VISIBILITIES = ['private', 'public'] as const;
+export const AVAILABLE_TEMPLATES = ['command', 'studio', 'corporate', 'candy'] as const;
+export const DEFAULT_TEMPLATE = 'command' as const;
 
 export type AppSurface = (typeof AVAILABLE_APPS)[number];
 export type RouteId = (typeof DEFAULT_ROUTES)[number];
 export type Agent = (typeof AGENTS)[number];
 export type GithubVisibility = (typeof GITHUB_VISIBILITIES)[number];
+export type Template = (typeof AVAILABLE_TEMPLATES)[number];
 
 export type CliOptions = {
   targetDir?: string;
   scope?: string;
   agent?: Agent;
+  template?: Template;
   apps?: AppSurface[];
   routes?: RouteId[];
   github?: boolean;
@@ -38,6 +42,7 @@ export type ScaffoldAnswers = {
   targetDir: string;
   scope: string;
   agent: Agent;
+  template: Template;
   apps: AppSurface[];
   routes: RouteId[];
   skipAgent: boolean;

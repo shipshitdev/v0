@@ -15,6 +15,7 @@ Usage:
 Options:
   --scope <text>      Product scope for the scaffold agent
   --agent <agent>     claude or codex
+  --template <name>   command, studio, corporate, candy (default: command)
   --apps <list>       web,app,desktop,mobile,extension,cli,docs
   --routes <list>     overview,new-task,search,inbox,activities
   --github            Create a GitHub repo with gh (default: off)
@@ -73,6 +74,7 @@ async function main(): Promise<void> {
     clearProgressPlan();
     console.log(`\nCreated ${answers.projectName}`);
     console.log(`Location: ${answers.targetDir}`);
+    console.log(`Template: ${answers.template}`);
     console.log(`Apps: ${answers.apps.map((app) => `apps/${app}`).join(', ')}`);
     console.log(`Routes: ${answers.routes.map((route) => `/${route}`).join(', ')}`);
     if (answers.skipAgent) {

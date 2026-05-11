@@ -998,6 +998,31 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 `;
 }
 
+function appProviders(): string {
+  return `'use client';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useState } from 'react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000,
+          },
+        },
+      }),
+  );
+
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+}
+`;
+}
+
 function appLayout(_surface: 'web' | 'app', answers: ScaffoldAnswers): string {
   const fontPkg = TEMPLATE_TOKENS[answers.template].typography.sans.fontsource;
   return `import type { Metadata } from 'next';
@@ -1005,6 +1030,7 @@ import '${fontPkg}/400.css';
 import '${fontPkg}/500.css';
 import '${fontPkg}/600.css';
 import './globals.css';
+import { Providers } from './providers';
 import { WorkspaceShell } from './workspace-shell';
 
 export const metadata: Metadata = {
@@ -1016,7 +1042,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <WorkspaceShell>{children}</WorkspaceShell>
+        <Providers>
+          <WorkspaceShell>{children}</WorkspaceShell>
+        </Providers>
       </body>
     </html>
   );
@@ -1211,6 +1239,7 @@ async function writeNextApp(root: string, surface: 'web' | 'app', answers: Scaff
     dependencies: {
       [TEMPLATE_TOKENS[answers.template].typography.sans.fontsource]: FONT_VERSIONS[answers.template],
       '@shipshitdev/ui': UI_VERSION,
+      ...(surface === 'app' ? { '@tanstack/react-query': '5.100.9' } : {}),
       next: '16.2.4',
       react: '19.2.5',
       'react-dom': '19.2.5',
@@ -1244,6 +1273,7 @@ async function writeNextApp(root: string, surface: 'web' | 'app', answers: Scaff
     await writeFile(root, `${appRoot}/app/layout.tsx`, webLandingLayout(answers));
     await writeFile(root, `${appRoot}/app/page.tsx`, webLandingPage(answers));
   } else {
+    await writeFile(root, `${appRoot}/app/providers.tsx`, appProviders());
     await writeFile(root, `${appRoot}/app/workspace-shell.tsx`, appShell(surface, answers));
     await writeFile(root, `${appRoot}/app/layout.tsx`, appLayout(surface, answers));
     await writeFile(root, `${appRoot}/app/page.tsx`, `import { redirect } from 'next/navigation';\n\nexport default function Home() {\n  redirect('/${homeRoute}');\n}\n`);

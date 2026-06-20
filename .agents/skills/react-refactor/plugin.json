@@ -1,7 +1,7 @@
 {
-  "name": "bun-validator",
+  "name": "react-refactor",
   "version": "1.0.0",
-  "description": "Validate Bun workspace configuration and detect common monorepo issues",
+  "description": "Architectural refactoring guide for React applications covering component architecture, state archit",
   "author": {
     "name": "Ship Shit Dev",
     "email": "hello@shipshit.dev",

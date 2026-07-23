@@ -10,3 +10,8 @@ coverage
 .env.*
 !.env.example
 .vercel
+
+# .claude/skills/ are symlinks regenerated from committed .agents/skills/
+# by scripts/setup-skills.sh (run: bun run skills:link). Source of truth is
+# .agents/skills/.
+.claude/skills/

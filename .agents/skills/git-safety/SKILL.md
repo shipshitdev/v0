@@ -1,11 +1,58 @@
 ---
 name: git-safety
-description: Scan git history for sensitive files, clean leaked credentials, and set up prevention measures. Use when asked to "check for secrets", "scan git history", "remove .env from history", "secure my repo", or "clean sensitive files".
+description: >-
+  Scans, cleans, and prevents secrets in git history across four modes: scan
+  (detect sensitive files in the current state and history), clean (rewrite
+  history to remove secrets using git-filter-repo or BFG), prevent (add
+  .gitignore and pre-commit hooks), and full (all three in sequence). Use when
+  the user asks to check for leaked credentials, scrub a secret from git
+  history, force-push a cleaned repo, set up pre-commit secret prevention, or
+  run a full git security audit.
+metadata:
+  version: "1.0.0"
+  tags: "git, security, secrets"
+disable-model-invocation: true
 ---
 
 # Git Safety Skill
 
 Comprehensive security scanning, cleaning, and prevention for git repositories.
+
+## Contract
+
+Inputs:
+
+- Repository root
+- Mode: scan, prevent, clean, or full
+- Optional leaked path, secret pattern, or affected ref range
+
+Outputs:
+
+- Sensitive file/history findings
+- Rotation and remediation checklist
+- Commands required for prevention or history cleanup
+
+Creates/Modifies:
+
+- Scan mode: no file changes
+- Prevent mode: `.gitignore` and optional hook updates
+- Clean mode: rewritten git history only after explicit confirmation
+
+External Side Effects:
+
+- May force-push rewritten history in clean mode
+- May require credential rotation outside the repository
+
+Confirmation Required:
+
+- Before history rewriting
+- Before force-pushing
+- Before changing hooks or ignore rules in shared repos
+
+Delegates To:
+
+- `security-audit` for broader application-security review
+- `open-source-checker` before publishing a private repo
 
 ## CRITICAL WARNING
 

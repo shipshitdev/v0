@@ -45,7 +45,9 @@
     "lint:fix": "bunx biome check --write src/",
     "format:check": "bunx biome check src/ --linter-enabled=false --assist-enabled=false --files-ignore-unknown=true",
     "deps:update": "bun update --latest",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "skills:sync": "bash scripts/setup-skills.sh --sync",
+    "skills:link": "bash scripts/setup-skills.sh"
   },
   "devDependencies": {
     "@types/node": "25.6.0",

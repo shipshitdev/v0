@@ -1,7 +1,7 @@
 {
-  "name": "bun-validator",
+  "name": "prompt-engineering",
   "version": "1.0.0",
-  "description": "Validate Bun workspace configuration and detect common monorepo issues",
+  "description": "Expert guide on prompt engineering patterns, best practices, and optimization techniques. Use when u",
   "author": {
     "name": "Ship Shit Dev",
     "email": "hello@shipshit.dev",

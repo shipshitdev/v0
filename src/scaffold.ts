@@ -16,6 +16,220 @@ const FONT_VERSIONS: Record<Template, string> = {
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SKILL_POOL_DIR = path.resolve(DIST_DIR, '..', 'skills');
 
+const GITHUB_TEMPLATE_FILES = {
+  '.github/ISSUE_TEMPLATE/bug.yml': `name: Bug report
+description: Report reproducible broken behavior
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before filing. Do not include secrets, credentials, personal data, or security-vulnerability details.
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: What happens now, and who or what is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What observable behavior should happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest repeatable sequence.
+      placeholder: |
+        1. Start ...
+        2. Run or open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Version or commit, operating system, runtime, browser or client, and relevant configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Add relevant logs, screenshots, or recordings after removing sensitive data.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues and pull requests for this problem.
+          required: true
+        - label: I removed secrets, credentials, personal data, and customer data.
+          required: true
+        - label: This report does not publicly disclose a security vulnerability.
+          required: true
+`,
+  '.github/ISSUE_TEMPLATE/feature.yml': `name: Feature / PRD
+description: Propose a new capability with an actionable product brief
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem and observable outcome before proposing implementation details.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is missing or broken, who is affected, and why does it matter?
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: State one measurable outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List what is in scope and what is explicitly out of scope.
+      placeholder: |
+        In:
+        - ...
+
+        Out:
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use testable outcomes. Prefer WHEN, WHILE, WHERE, or IF ... THE SYSTEM SHALL ...
+      placeholder: |
+        - [ ] WHEN ... THE SYSTEM SHALL ...
+        - [ ] IF ... THEN THE SYSTEM SHALL ...
+    validations:
+      required: true
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical notes
+      description: Add constraints, risks, dependencies, public contracts, or architectural decisions without prescribing a brittle file-by-file implementation.
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: Add related issues, designs, research, or supporting context.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues and pull requests for this request.
+          required: true
+        - label: I described the problem, desired outcome, and scope boundaries.
+          required: true
+`,
+  '.github/ISSUE_TEMPLATE/task.yml': `name: Agent-ready task
+description: Define a focused chore, refactor, documentation change, or implementation slice
+body:
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Execution mode
+      description: Choose AFK only when an agent can complete the task without another decision.
+      options:
+        - AFK
+        - HITL
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior or context
+      description: Describe the relevant state today.
+    validations:
+      required: true
+  - type: textarea
+    id: desired
+    attributes:
+      label: Desired behavior
+      description: Describe what must be true when the task is complete.
+    validations:
+      required: true
+  - type: textarea
+    id: contracts
+    attributes:
+      label: Key contracts
+      description: Name interfaces, commands, APIs, configuration keys, data shapes, or compatibility constraints that must be preserved or changed.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List mechanically verifiable outcomes.
+      placeholder: |
+        - [ ] WHEN ... THE SYSTEM SHALL ...
+        - [ ] IF ... THEN THE SYSTEM SHALL ...
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: List focused commands, checks, or review steps that prove completion.
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: List adjacent work that must not be included.
+    validations:
+      required: true
+`,
+  '.github/ISSUE_TEMPLATE/config.yml': `blank_issues_enabled: false
+`,
+  '.github/pull_request_template.md': `## Summary
+
+<!-- What changed and what user, developer, or repository outcome does it produce? -->
+
+## Related issue
+
+<!-- Use \`Closes #123\` when this PR fully resolves tracked work. Use \`Refs #123\` for context only. If no tracking issue exists, write \`No-Issue\` and explain why. Repositories may require a closing keyword for feat/fix PRs. -->
+
+## Scope
+
+<!-- Call out important boundaries, public contracts, migrations, generated files, or intentionally excluded work. -->
+
+## Verification
+
+<!-- List focused commands or manual checks and their results. State which broader checks are intentionally left to CI. -->
+
+## Screenshots
+
+<!-- Required for visible UI changes; otherwise write "Not applicable". -->
+
+## Checklist
+
+- [ ] I reviewed the final diff for unrelated changes.
+- [ ] I ran the relevant focused checks or documented why they were left to CI.
+- [ ] I updated relevant documentation or explained why no documentation change is needed.
+- [ ] I documented migrations, release steps, or external configuration changes, or marked them not applicable.
+- [ ] I did not include secrets, credentials, personal data, customer data, or generated build output.
+`,
+} as const;
+
 function titleCase(value: string): string {
   return value
     .split(/[-_\s]+/)
@@ -2693,6 +2907,14 @@ trim_trailing_whitespace = false
   await writeFile(root, 'README.md', `# ${answers.projectName}\n\nGenerated with \`@shipshitdev/v0\`.\n\n## Start\n\n\`\`\`bash\nbun install\n${startCommand(answers.apps)}\n\`\`\`\n\n## App Scripts\n\n${appScriptLines(answers.apps)}\n\n## Update Dependencies\n\n\`\`\`bash\nbun run deps:update\n\`\`\`\n\n## Agent Workspace\n\n- \`.agents/skills\` - source of truth for selected dev workflow skills\n- \`.agents/memory\` - source of truth for project memory\n- \`.claude/skills\` and \`.claude/memory\` - relative symlinks into \`.agents\`\n- \`.codex/skills\` and \`.codex/memory\` - relative symlinks into \`.agents\`\n- \`skills\` - selected repo workflow skills for PRDs, planning, execution, review, and verification\n- \`DESIGN.md\` - machine-readable design system spec ([google-labs-code/design.md](https://github.com/google-labs-code/design.md)); validate with \`bun run lint:design\`\n\n## Scope\n\n${answers.scope}\n`);
 }
 
+async function writeGitHubTemplates(root: string): Promise<void> {
+  await Promise.all(
+    Object.entries(GITHUB_TEMPLATE_FILES).map(([filePath, content]) =>
+      writeFile(root, filePath, content),
+    ),
+  );
+}
+
 async function writeV0Metadata(root: string, answers: ScaffoldAnswers): Promise<void> {
   await writeFile(root, '.v0/scope.md', scopeMarkdown(answers));
   await writeFile(root, '.v0/agent-prompt.md', buildAgentPrompt(answers));
@@ -2755,6 +2977,7 @@ export function scaffoldStepLabels(answers: ScaffoldAnswers): string[] {
   return [
     'Check target directory',
     'Create Bun/Turbo workspace',
+    'Write GitHub issue and PR templates',
     'Write v0 scope and agent prompt',
     'Write design system (DESIGN.md)',
     'Reserve packages workspace',
@@ -2768,6 +2991,7 @@ export async function scaffoldProject(answers: ScaffoldAnswers): Promise<void> {
   const root = answers.targetDir;
   await runStep('Check target directory', () => prepareTarget(root));
   await runStep('Create Bun/Turbo workspace', () => writeWorkspaceFiles(root, answers));
+  await runStep('Write GitHub issue and PR templates', () => writeGitHubTemplates(root));
   await runStep('Write v0 scope and agent prompt', () => writeV0Metadata(root, answers));
   await runStep('Write design system (DESIGN.md)', () => writeDesignSystem(root, answers));
   await runStep('Reserve packages workspace', () => writePackagesWorkspace(root));

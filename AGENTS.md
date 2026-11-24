@@ -71,3 +71,9 @@ bun run typecheck
 ## Memory
 
 Read `.agents/memory/*.md` before making substantial changes. The latest session summary is in `.agents/memory/session-2026-04-23.md`.
+
+## Claude model routing
+
+- Standard implementation: Claude Sonnet 5.5.
+- Big implementation (large or cross-cutting changes) and planning: Claude Opus 5.5 or newer.
+- Audits, major or minor: the latest Claude Fable (5.2 today). Fable never implements or edits code.
